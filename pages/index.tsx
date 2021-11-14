@@ -18,13 +18,8 @@ import {
   SliderTrack,
   SliderFilledTrack,
   SliderThumb,
-  IconButton,
   NumberInput,
   NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
-  InputLeftElement,
   InputGroup,
   Input,
 } from "@chakra-ui/react";
@@ -58,6 +53,17 @@ const STARTING_HOUR = 8;
 
 const scheduler = new Scheduler();
 
+// Time added to the starting point in minutes
+const getTime = ({ addedTime, parsedDate }: { addedTime: number; parsedDate: Date }) => {
+  const startingPoint = new Date(parsedDate.setHours(STARTING_HOUR));
+
+  const chosenPoint = new Date(
+    startingPoint.setMinutes(parsedDate.getMinutes() + addedTime)
+  ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+  return chosenPoint;
+};
+
 const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) => {
   const [existingAppointments, setExistingAppointments] = useState<ScheduleSpecificDate[] | null>(
     null
@@ -69,6 +75,8 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
 
   const parsedDate = new Date(date);
   const nextDay = new Date(parsedDate.setDate(parsedDate.getDate() + 1)).toISOString();
+  const parsedTimeFrom = getTime({ addedTime: timeFrom, parsedDate });
+  const parsedTimeTo = getTime({ addedTime: timeTo, parsedDate });
 
   useEffect(() => {
     fetch(url)
@@ -84,17 +92,6 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
       .catch(err => console.log(err));
   }, [url]);
 
-  // Time added to the starting point in minutes
-  const getTime = (addedTime: number) => {
-    const startingPoint = new Date(parsedDate.setHours(STARTING_HOUR));
-
-    const chosenPoint = new Date(
-      startingPoint.setMinutes(parsedDate.getMinutes() + addedTime)
-    ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
-    return chosenPoint;
-  };
-
   const availabilitySlots =
     existingAppointments &&
     scheduler.getAvailability({
@@ -104,8 +101,8 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
       interval: meetingInterval,
       schedule: {
         weekdays: {
-          from: getTime(timeFrom),
-          to: getTime(timeTo),
+          from: parsedTimeFrom,
+          to: parsedTimeTo,
         },
         unavailability: existingAppointments,
       },
@@ -154,9 +151,9 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
                 </Heading>
 
                 <HStack spacing={2}>
-                  <Input isReadOnly value={getTime(timeFrom)} />
+                  <Input isReadOnly value={parsedTimeFrom} />
 
-                  <Input isReadOnly value={getTime(timeTo)} />
+                  <Input isReadOnly value={parsedTimeTo} />
                 </HStack>
 
                 <RangeSlider
@@ -164,7 +161,7 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
                   min={0}
                   max={720} // min from starting point (20:00)
                   step={30}
-                  onChangeEnd={setTimeFromTo}
+                  onChangeEnd={(v: [number, number]) => setTimeFromTo(v)}
                 >
                   <RangeSliderTrack bg="red.100">
                     <RangeSliderFilledTrack bg="pink.500" />
