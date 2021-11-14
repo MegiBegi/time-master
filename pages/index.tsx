@@ -26,6 +26,7 @@ import {
   NumberDecrementStepper,
   InputLeftElement,
   InputGroup,
+  Input,
 } from "@chakra-ui/react";
 import { TimeIcon } from "@chakra-ui/icons";
 
@@ -53,6 +54,8 @@ import { TimeIcon } from "@chakra-ui/icons";
 //   }
 // ]
 
+const STARTING_HOUR = 8;
+
 const scheduler = new Scheduler();
 
 const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) => {
@@ -61,6 +64,8 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
   );
   const [meetingDuration, setMeetingDuration] = useState(60); //min
   const [meetingInterval, setIntervalDuration] = useState(30); //min
+
+  const [[timeFrom, timeTo], setTimeFromTo] = useState([60, 540]); //min
 
   const parsedDate = new Date(date);
   const nextDay = new Date(parsedDate.setDate(parsedDate.getDate() + 1)).toISOString();
@@ -79,6 +84,17 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
       .catch(err => console.log(err));
   }, [url]);
 
+  // Time added to the starting point in minutes
+  const getTime = (addedTime: number) => {
+    const startingPoint = new Date(parsedDate.setHours(STARTING_HOUR));
+
+    const chosenPoint = new Date(
+      startingPoint.setMinutes(parsedDate.getMinutes() + addedTime)
+    ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+    return chosenPoint;
+  };
+
   const availabilitySlots =
     existingAppointments &&
     scheduler.getAvailability({
@@ -88,8 +104,8 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
       interval: meetingInterval,
       schedule: {
         weekdays: {
-          from: "09:00",
-          to: "17:00",
+          from: getTime(timeFrom),
+          to: getTime(timeTo),
         },
         unavailability: existingAppointments,
       },
@@ -136,6 +152,28 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
                 <Heading as="h3" size="md">
                   Hours to choose from
                 </Heading>
+
+                <HStack spacing={2}>
+                  <Input isReadOnly value={getTime(timeFrom)} />
+
+                  <Input isReadOnly value={getTime(timeTo)} />
+                </HStack>
+
+                <RangeSlider
+                  defaultValue={[60, 540]}
+                  min={0}
+                  max={720} // min from starting point (20:00)
+                  step={30}
+                  onChangeEnd={setTimeFromTo}
+                >
+                  <RangeSliderTrack bg="red.100">
+                    <RangeSliderFilledTrack bg="pink.500" />
+                  </RangeSliderTrack>
+
+                  <RangeSliderThumb boxSize={6} index={0} />
+
+                  <RangeSliderThumb boxSize={6} index={1} />
+                </RangeSlider>
               </VStack>
 
               <VStack spacing={2} w="full" alignItems="flex-start">
@@ -174,7 +212,7 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
                   max={180}
                   onChangeEnd={setMeetingDuration}
                 >
-                  <SliderTrack>
+                  <SliderTrack bg="red.100">
                     <SliderFilledTrack />
                   </SliderTrack>
                   <SliderThumb />
@@ -217,7 +255,7 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
                   max={180}
                   onChangeEnd={setIntervalDuration}
                 >
-                  <SliderTrack>
+                  <SliderTrack bg="red.100">
                     <SliderFilledTrack />
                   </SliderTrack>
                   <SliderThumb />
