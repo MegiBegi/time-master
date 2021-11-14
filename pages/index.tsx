@@ -3,6 +3,7 @@ import Head from "next/head";
 import { useState, useEffect, FC } from "react";
 import { Appointment } from "./types";
 import { Scheduler, ScheduleSpecificDate } from "@ssense/sscheduler";
+import { useToast } from "@chakra-ui/react";
 import {
   Box,
   Heading,
@@ -70,8 +71,9 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
   );
   const [meetingDuration, setMeetingDuration] = useState(60); //min
   const [meetingInterval, setIntervalDuration] = useState(30); //min
-
   const [[timeFrom, timeTo], setTimeFromTo] = useState([60, 540]); //min
+
+  const toast = useToast();
 
   const parsedDate = new Date(date);
   const nextDay = new Date(parsedDate.setDate(parsedDate.getDate() + 1)).toISOString();
@@ -212,6 +214,7 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
                   <SliderTrack bg="red.100">
                     <SliderFilledTrack />
                   </SliderTrack>
+
                   <SliderThumb />
                 </Slider>
               </VStack>
@@ -255,6 +258,7 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
                   <SliderTrack bg="red.100">
                     <SliderFilledTrack />
                   </SliderTrack>
+
                   <SliderThumb />
                 </Slider>
               </VStack>
@@ -263,7 +267,20 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
             <VStack w="full" h="full" overflow="auto">
               {availabilitySlots &&
                 availabilitySlots[date].map(slot => (
-                  <Button key={slot.time} disabled={!slot.available} h="auto">
+                  <Button
+                    key={slot.time}
+                    disabled={!slot.available}
+                    h="auto"
+                    onClick={() =>
+                      toast({
+                        title: "Appointment time chosen!",
+                        description: "Now sit and relax, we'll take care of the rest 💃",
+                        status: "success",
+                        duration: 9000,
+                        isClosable: true,
+                      })
+                    }
+                  >
                     {slot.time}
                   </Button>
                 ))}
