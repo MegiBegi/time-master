@@ -50,7 +50,7 @@ import { TimeIcon } from "@chakra-ui/icons";
 //   }
 // ]
 
-const STARTING_HOUR = 8;
+const STARTING_HOUR = 7;
 
 const scheduler = new Scheduler();
 
@@ -71,7 +71,7 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
   );
   const [meetingDuration, setMeetingDuration] = useState(60); //min
   const [meetingInterval, setIntervalDuration] = useState(30); //min
-  const [[timeFrom, timeTo], setTimeFromTo] = useState([60, 540]); //min
+  const [[timeFrom, timeTo], setTimeFromTo] = useState([60, 600]); //min
 
   const toast = useToast();
 
@@ -159,9 +159,9 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
                 </HStack>
 
                 <RangeSlider
-                  defaultValue={[60, 540]}
+                  defaultValue={[60, 600]}
                   min={0}
-                  max={720} // min from starting point (20:00)
+                  max={780} // min from starting point (20:00)
                   step={30}
                   onChangeEnd={(v: [number, number]) => setTimeFromTo(v)}
                 >
