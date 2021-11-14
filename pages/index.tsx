@@ -1,9 +1,33 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import Image from "next/image";
 import { useState, useEffect, FC } from "react";
 import { Appointment } from "./types";
 import { Scheduler, ScheduleSpecificDate } from "@ssense/sscheduler";
+import {
+  Box,
+  Heading,
+  VStack,
+  Button,
+  HStack,
+  RangeSlider,
+  RangeSliderTrack,
+  RangeSliderFilledTrack,
+  RangeSliderThumb,
+  InputRightElement,
+  Slider,
+  SliderTrack,
+  SliderFilledTrack,
+  SliderThumb,
+  IconButton,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  InputLeftElement,
+  InputGroup,
+} from "@chakra-ui/react";
+import { TimeIcon } from "@chakra-ui/icons";
 
 // exemplary response
 // [
@@ -35,6 +59,8 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
   const [existingAppointments, setExistingAppointments] = useState<ScheduleSpecificDate[] | null>(
     null
   );
+  const [meetingDuration, setMeetingDuration] = useState(60); //min
+  const [meetingInterval, setIntervalDuration] = useState(30); //min
 
   const parsedDate = new Date(date);
   const nextDay = new Date(parsedDate.setDate(parsedDate.getDate() + 1)).toISOString();
@@ -58,8 +84,8 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
     scheduler.getAvailability({
       from: date,
       to: nextDay,
-      duration: 60,
-      interval: 30,
+      duration: meetingDuration,
+      interval: meetingInterval,
       schedule: {
         weekdays: {
           from: "09:00",
@@ -77,15 +103,139 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main>
-        <h1>Available slots </h1>
-        {availabilitySlots &&
-          availabilitySlots[date].map(slot => (
-            <button key={slot.time} disabled={!slot.available}>
-              {slot.time}
-            </button>
-          ))}
-      </main>
+      <Box
+        w="100%"
+        minH="100vh"
+        d="flex"
+        justifyContent="center"
+        bgGradient={[
+          "linear(to-tr, teal.300, yellow.400)",
+          "linear(to-t, blue.200, teal.500)",
+          "linear(to-b, orange.100, purple.300)",
+        ]}
+      >
+        <Box width="25vw" height="60vh" padding={2} mt="15vh">
+          <Heading as="h2" size="2xl" mb={8}>
+            We're time-masters, let us save the day! And your time!
+          </Heading>
+
+          <HStack spacing={2} h="full">
+            <VStack spacing={8} w="full" h="full" alignItems="flex-start">
+              <VStack spacing={2} alignItems="flex-start">
+                <Heading as="h3" size="md">
+                  Appointment date
+                </Heading>
+
+                <Heading as="h4" size="sm">
+                  <TimeIcon w={6} h={6} mr="2" />
+                  {date}
+                </Heading>
+              </VStack>
+
+              <VStack spacing={2}>
+                <Heading as="h3" size="md">
+                  Hours to choose from
+                </Heading>
+              </VStack>
+
+              <VStack spacing={2} w="full" alignItems="flex-start">
+                <Heading as="h3" size="md">
+                  New meeting duration
+                </Heading>
+
+                <InputGroup>
+                  <InputRightElement
+                    pointerEvents="none"
+                    color="black.500"
+                    fontSize="1em"
+                    children="min"
+                    top="16px"
+                  />
+
+                  <NumberInput
+                    isReadOnly
+                    fontSize="1.5em"
+                    mt="4"
+                    display="block"
+                    defaultValue={60}
+                    w={100}
+                    value={meetingDuration}
+                  >
+                    <NumberInputField />
+                  </NumberInput>
+                </InputGroup>
+
+                <Slider
+                  aria-label="meeting-duration-slider"
+                  colorScheme="pink"
+                  defaultValue={60}
+                  step={30}
+                  min={30}
+                  max={180}
+                  onChangeEnd={setMeetingDuration}
+                >
+                  <SliderTrack>
+                    <SliderFilledTrack />
+                  </SliderTrack>
+                  <SliderThumb />
+                </Slider>
+              </VStack>
+
+              <VStack spacing={2} w="full" alignItems="flex-start">
+                <Heading as="h3" size="md">
+                  Meetings interval
+                </Heading>
+
+                <InputGroup>
+                  <InputRightElement
+                    pointerEvents="none"
+                    color="black.500"
+                    fontSize="1em"
+                    children="min"
+                    top="16px"
+                  />
+
+                  <NumberInput
+                    isReadOnly
+                    fontSize="1.5em"
+                    mt="4"
+                    display="block"
+                    defaultValue={30}
+                    w={100}
+                    value={meetingInterval}
+                  >
+                    <NumberInputField />
+                  </NumberInput>
+                </InputGroup>
+
+                <Slider
+                  aria-label="meeting-duration-slider"
+                  colorScheme="pink"
+                  defaultValue={30}
+                  step={15}
+                  min={15}
+                  max={180}
+                  onChangeEnd={setIntervalDuration}
+                >
+                  <SliderTrack>
+                    <SliderFilledTrack />
+                  </SliderTrack>
+                  <SliderThumb />
+                </Slider>
+              </VStack>
+            </VStack>
+
+            <VStack w="full" h="full" overflow="auto">
+              {availabilitySlots &&
+                availabilitySlots[date].map(slot => (
+                  <Button key={slot.time} disabled={!slot.available} h="auto">
+                    {slot.time}
+                  </Button>
+                ))}
+            </VStack>
+          </HStack>
+        </Box>
+      </Box>
     </div>
   );
 };
