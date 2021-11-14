@@ -1,7 +1,8 @@
+/* eslint-disable react/no-children-prop */
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useState, useEffect, FC } from "react";
-import { Appointment } from "./types";
+import { Appointment } from "../types";
 import { Scheduler, ScheduleSpecificDate } from "@ssense/sscheduler";
 import { useToast } from "@chakra-ui/react";
 import {
@@ -26,59 +27,37 @@ import {
 } from "@chakra-ui/react";
 import { TimeIcon } from "@chakra-ui/icons";
 
-// exemplary response
-// [
-//   {
-//     "name": "Lunch with Mort",
-// 	"startTime": "2021-03-03T12:00:00+0000",
-//     "endTime": "2021-03-03T13:00:00+0000"
-//   },
-//   {
-//     "name": "Morning Meeting",
-// 	"startTime": "2021-03-03T09:00:00+0000",
-//     "endTime": "2021-03-03T09:30:00+0000"
-//   },
-//   {
-//     "name": "Exit Interviews",
-// 	"startTime": "2021-03-03T14:00:00+0000",
-//     "endTime": "2021-03-03T17:30:00+0000"
-//   },
-//   {
-// 	"name": "Exit Interview - Jack Sparrow",
-// 	"startTime": "2021-03-03T15:30:00+0000",
-//     "endTime": "2021-03-03T15:45:00+0000"
-//   }
-// ]
-
 const STARTING_HOUR = 7;
 
 const scheduler = new Scheduler();
 
-// Time added to the starting point in minutes
-const getTime = ({ addedTime, parsedDate }: { addedTime: number; parsedDate: Date }) => {
-  const startingPoint = new Date(parsedDate.setHours(STARTING_HOUR));
+const getTimeFromMinuteDiff = ({
+  // Time added to the starting point in minutes
+  addedTime,
+  startingPoint,
+}: {
+  addedTime: number;
+  startingPoint: string;
+}) => {
+  const startingPointParsed = new Date(startingPoint);
+  const startingPointUpdated = new Date(startingPointParsed.setHours(STARTING_HOUR));
 
-  const chosenPoint = new Date(
-    startingPoint.setMinutes(parsedDate.getMinutes() + addedTime)
+  const selectedTimePoint = new Date(
+    startingPointUpdated.setMinutes(new Date(startingPoint).getMinutes() + addedTime)
   ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-  return chosenPoint;
+  return selectedTimePoint;
 };
 
 const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) => {
   const [existingAppointments, setExistingAppointments] = useState<ScheduleSpecificDate[] | null>(
     null
   );
-  const [meetingDuration, setMeetingDuration] = useState(60); //min
-  const [meetingInterval, setIntervalDuration] = useState(30); //min
-  const [[timeFrom, timeTo], setTimeFromTo] = useState([60, 600]); //min
+  const [meetingDuration, setMeetingDuration] = useState(60); // minutes
+  const [meetingInterval, setIntervalDuration] = useState(30); //minutes
+  const [[timeFrom, timeTo], setTimeFromTo] = useState([60, 600]); //minutes
 
   const toast = useToast();
-
-  const parsedDate = new Date(date);
-  const nextDay = new Date(parsedDate.setDate(parsedDate.getDate() + 1)).toISOString();
-  const parsedTimeFrom = getTime({ addedTime: timeFrom, parsedDate });
-  const parsedTimeTo = getTime({ addedTime: timeTo, parsedDate });
 
   useEffect(() => {
     fetch(url)
@@ -91,12 +70,19 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
           }))
         )
       )
-      .catch(err => console.log(err));
+      .catch(console.error);
   }, [url]);
 
-  const availabilitySlots =
-    existingAppointments &&
-    scheduler.getAvailability({
+  const parsedTimeFrom = getTimeFromMinuteDiff({ addedTime: timeFrom, startingPoint: date });
+  const parsedTimeTo = getTimeFromMinuteDiff({ addedTime: timeTo, startingPoint: date });
+
+  const getAvailableSlots = () => {
+    if (!existingAppointments) return null;
+
+    const parsedDate = new Date(date);
+    const nextDay = new Date(parsedDate.setDate(parsedDate.getDate() + 1)).toISOString();
+
+    return scheduler.getAvailability({
       from: date,
       to: nextDay,
       duration: meetingDuration,
@@ -109,6 +95,9 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
         unavailability: existingAppointments,
       },
     });
+  };
+
+  const availabilitySlots = getAvailableSlots();
 
   return (
     <div>
@@ -131,7 +120,7 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
       >
         <Box width="25vw" height="60vh" padding={2} mt="15vh">
           <Heading as="h2" size="2xl" mb={8}>
-            We're time-masters, let us save the day! And your time!
+            We&apos;re time-masters, let us save the day! And your time!
           </Heading>
 
           <HStack spacing={2} h="full">
@@ -161,7 +150,7 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
                 <RangeSlider
                   defaultValue={[60, 600]}
                   min={0}
-                  max={780} // min from starting point (20:00)
+                  max={780} // minutes from starting point (20:00)
                   step={30}
                   onChangeEnd={(v: [number, number]) => setTimeFromTo(v)}
                 >
@@ -273,7 +262,7 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
                     h="auto"
                     onClick={() =>
                       toast({
-                        title: "Appointment time chosen!",
+                        title: "Appointment time selected!",
                         description: "Now sit and relax, we'll take care of the rest 💃",
                         status: "success",
                         duration: 9000,
