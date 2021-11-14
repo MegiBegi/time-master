@@ -111,6 +111,8 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
         w="100%"
         minH="100vh"
         d="flex"
+        p={6}
+        overflow="auto"
         justifyContent="center"
         bgGradient={[
           "linear(to-tr, teal.300, yellow.400)",
@@ -118,7 +120,7 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
           "linear(to-b, orange.100, purple.300)",
         ]}
       >
-        <Box width="25vw" height="60vh" padding={2} mt="15vh">
+        <Box width="25vw" padding={2} mt="15vh">
           <Heading as="h2" size="2xl" mb={8}>
             We&apos;re time-masters, let us save the day! And your time!
           </Heading>
