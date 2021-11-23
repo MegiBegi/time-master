@@ -80,11 +80,11 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
     if (!existingAppointments) return null;
 
     const parsedDate = new Date(date);
-    const nextDay = new Date(parsedDate.setDate(parsedDate.getDate() + 1)).toISOString();
+    const to = new Date(parsedDate.setDate(parsedDate.getDate() + 1)).toISOString();
 
     return scheduler.getAvailability({
-      from: date,
-      to: nextDay,
+      from: new Date(date).toISOString(),
+      to,
       duration: meetingDuration,
       interval: meetingInterval,
       schedule: {
