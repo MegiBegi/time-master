@@ -1,3 +1,11 @@
 {
-  "cSpell.words": ["Chakra", "sscheduler", "ssense"]
+  "cSpell.words": ["Chakra", "sscheduler", "ssense"],
+  "files.eol": "\n",
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  }
 }

@@ -44,7 +44,7 @@ const getTimeFromMinuteDiff = ({
 
   const selectedTimePoint = new Date(
     startingPointUpdated.setMinutes(new Date(startingPoint).getMinutes() + addedTime)
-  ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
 
   return selectedTimePoint;
 };
@@ -54,8 +54,8 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
     null
   );
   const [meetingDuration, setMeetingDuration] = useState(60); // minutes
-  const [meetingInterval, setIntervalDuration] = useState(30); //minutes
-  const [[timeFrom, timeTo], setTimeFromTo] = useState([60, 600]); //minutes
+  const [meetingInterval, setIntervalDuration] = useState(30); // minutes
+  const [[timeFrom, timeTo], setTimeFromTo] = useState([60, 600]); // minutes
 
   const toast = useToast();
 
@@ -83,8 +83,8 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
     const to = new Date(parsedDate.setDate(parsedDate.getDate() + 1)).toISOString();
 
     return scheduler.getAvailability({
-      from: new Date(date).toISOString(),
       to,
+      from: new Date(date).toISOString(),
       duration: meetingDuration,
       interval: meetingInterval,
       schedule: {
@@ -119,7 +119,12 @@ const AvailableTimeSlots: FC<{ url: string; date: string }> = ({ url, date }) =>
           "linear(to-b, orange.100, purple.300)",
         ]}
       >
-        <Box width="25vw" padding={2} mt="15vh" overflow="auto">
+        <Box
+          width={{ sm: "90vw", lg: "40vw", "2xl": "800px" }}
+          padding={2}
+          mt={{ sm: "2vh", lg: "8vh" }}
+          overflow="auto"
+        >
           <Heading as="h2" size="2xl" mb={8}>
             We&apos;re time-masters, let us save the day! And your time!
           </Heading>
